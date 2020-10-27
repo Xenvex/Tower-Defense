@@ -11,6 +11,8 @@ public class Enemy : MonoBehaviour
   private int index = 0;
   private bool move = true;
 
+    public int HP = 10;
+
   // Start is called before the first frame update
   void Start()
   {
@@ -26,6 +28,16 @@ public class Enemy : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
+    if(HP <= 0)
+    {
+        GameObject findWatcher = GameObject.FindGameObjectsWithTag("Watcher")[0];
+        Watcher watcherScript = findWatcher.GetComponent<Watcher>();
+        watcherScript.coins += 1;
+
+        Debug.Log("Yoinks Scoob, I'm dead");
+        Destroy(gameObject);
+    }
+
     if (move)
     {
       transform.Translate(direction.normalized * Time.deltaTime * amplify);
