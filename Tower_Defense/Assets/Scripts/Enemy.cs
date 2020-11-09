@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 public class Enemy : MonoBehaviour
 {
-  public Waypoints[] navPoints;
+  private Waypoints[] navPoints;
   private Transform target;
   private Vector3 direction;
   public float amplify = 1;
@@ -16,9 +18,18 @@ public class Enemy : MonoBehaviour
   public int cashPoints = 100;
   private HealthBar healthBar;
 
-  // Start is called before the first frame update
-  void Start()
+
+  public UnityEvent DeathEvent;
+
+    //AudioSource
+    private AudioSource audioSource;
+    public AudioClip deathCurdle;
+
+    // Start is called before the first frame update
+    public void StartEnemy(Waypoints[] navigationPath)
   {
+        audioSource = GetComponent<AudioSource>();
+        navPoints = navigationPath;
     purse = GameObject.FindGameObjectWithTag("Purse").GetComponent<Purse>();
     healthBar = GetComponentInChildren<HealthBar>();
     startingHealth = currentHealth;
@@ -60,13 +71,28 @@ public class Enemy : MonoBehaviour
     }
   }
 
+  void OnTriggerEnter(Collider other)
+  {
+        if(other.gameObject.tag == "ExitGate")
+        {
+            SceneManager.LoadScene("GameOver");
+        }
+  }
+
   public void TakeDamage(int amountDamage)
   {
+    
     currentHealth -= amountDamage;
+    if(currentHealth == 0)
+    {
+        //Death Noise
+        audioSource.PlayOneShot(deathCurdle);
+    }
     if (currentHealth < 0)
     {
-      purse.AddCash(cashPoints);
-      Destroy(this.gameObject);
+      purse.AddCash(cashPoints); //add cash to players purse
+      DeathEvent.Invoke(); //notify towers that I am killed
+      Destroy(this.gameObject); //Get rid of the object
     }
     else
     {
